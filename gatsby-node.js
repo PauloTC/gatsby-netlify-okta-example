@@ -7,18 +7,18 @@ exports.createPages = async({ actions, graphql, reporter }) => {
 
     const result = await graphql(`
     {
-      allMarkdownRemark(
-        sort: { order: DESC, fields: [frontmatter___date] }
-        limit: 1000
-      ) {
-        edges {
-          node {
-            frontmatter {
-              path
+        allMarkdownRemark(
+            sort: { order: DESC, fields: [frontmatter___date] }
+            limit: 1000
+        ) {
+            edges {
+                node {
+                    frontmatter {
+                        path
+                    }
+                }
             }
-          }
         }
-      }
     }
   `);
 
@@ -35,4 +35,28 @@ exports.createPages = async({ actions, graphql, reporter }) => {
             context: {}, // additional data can be passed via context
         })
     })
+};
+
+
+exports.onCreatePage = async({ page, actions }) => {
+    const { createPage } = actions;
+
+    if (page.path.match(/^\/account/)) {
+        page.matchPath = "/account/*";
+        createPage(page)
+    }
+};
+
+exports.onCreateWebpackConfig = ({ stage, loaders, actions }) => {
+    if (stage === 'build-html') {
+        // Exclude Sign-In Widget from compilation path
+        actions.setWebpackConfig({
+            module: {
+                rules: [{
+                    test: /okta-sign-in/,
+                    use: loaders.null(),
+                }],
+            },
+        })
+    }
 };
